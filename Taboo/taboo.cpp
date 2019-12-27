@@ -4,16 +4,14 @@
 #include <string_view>
 #include <memory>
 #include <vector>
-#include <stdlib.h>
 #include <ctime> 
 
 using namespace std;
 
 class Taboo {
 private:
-	ifstream inFile;
-	ofstream outFile;
-	string ifname = "C://Users//geeky//Desktop//games//taboo.csv";
+	ifstream file;
+	string fname;
 	string line;
 	vector < vector<string> > rows;
 	unique_ptr<char[]> buffer;
@@ -24,6 +22,7 @@ private:
 	void getRows();
 	int getNum();
 public:
+	Taboo(string fname) : fname(fname) {};
 	void readFile();
 	void playGame();
 	void processFile();
@@ -70,19 +69,19 @@ void Taboo::getRows() {
 }
 
 void Taboo::readFile() {
-	inFile.open(ifname);
-	if (!inFile.is_open()) {
+	file.open(fname);
+	if (!file.is_open()) {
 		cout << "Error opening file";
 		exit(1);
 	}
-	inFile.seekg(0, inFile.end);
-	const auto length = static_cast<size_t>(inFile.tellg()) + 1;
-	inFile.seekg(0, inFile.beg);
+	file.seekg(0, file.end);
+	const auto length = static_cast<size_t>(file.tellg()) + 1;
+	file.seekg(0, file.beg);
 	buffer = make_unique<char[]>(length);
 	memset(buffer.get(), 0, length);
-	inFile.read(buffer.get(), length);
+	file.read(buffer.get(), length);
 	svBuffer = buffer.get();
-	inFile.close();
+	file.close();
 	return;
 }
 
@@ -99,27 +98,35 @@ void Taboo::playGame() {
 		system("cls");
 		cout << "Word is: " << rows[num][0] << endl << endl;
 		cout << "Taboo Words are: ";
-		for (int j = 1; j < rows[num].size(); ++j)
+		for (unsigned int j = 1; j < rows[num].size(); ++j)
 			cout << endl << rows[num][j];
 		cout << endl << endl;
 		system("pause");
 		rows.erase(rows.begin() + num);
-	}
-		
+	}	
 	return;
 }
 
-int main() {
+int main(int argc, char* argv[]) {
 	srand((unsigned)time(0));
-	Taboo game;
-	char ch = ' ';
-	cout << "Press enter to play game! ";
-	
-	while(ch != '\n')
-		ch = getchar();
+	if (argc == 2) {
+		string f = argv[1];
+		Taboo game(f);
+		char ch = ' ';
+		cout << "Press enter to play game! ";
 
-	game.readFile();
-	game.processFile();
-	game.playGame();
+		while (ch != '\n')
+			ch = getchar();
+
+		game.readFile();
+		game.processFile();
+		game.playGame();
+	}
+
+	else {
+		cout << "Incorrect Use! " << endl;
+		cout << "Usage: " << "wordsFilePath" << endl;
+		return -1;
+	}
 	return 0;
 }
